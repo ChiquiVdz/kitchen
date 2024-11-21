@@ -13,3 +13,5 @@ export const deleteRecepie = (id) => recepieApi.delete(`/${id}/`)
 export const updateRecepie = (id, recepie) => recepieApi.put(`/${id}/`, recepie)
 
 export const getRecepie = (id) => recepieApi.get(`/${id}/`)
+
+export const getIngredients = () => recepieApi.get('/')

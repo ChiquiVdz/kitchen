@@ -1,6 +1,6 @@
 import { useForm } from 'react-hook-form'
-import { useEffect } from 'react'
-import { createRecepie, deleteRecepie, updateRecepie, getRecepie } from '../api/recepies.api'
+import { useEffect, useState } from 'react'
+import { createRecepie, deleteRecepie, updateRecepie, getRecepie, getIngredients } from '../api/recepies.api'
 import { useNavigate, useParams } from 'react-router-dom'
 import { toast } from 'react-hot-toast'
 
@@ -11,7 +11,12 @@ export function RecepieFormPage() {
     const navigate = useNavigate()
     const params = useParams()
 
+    const [ingredients, setIngredients] = useState([])
+    const [selectedIngredients, setSelectedIngredients] = useState([])
+
     const onSubmit = handleSubmit(async (data) => {
+        data.ingredients = selectedIngredients
+
         if (params.id) {
             await updateRecepie(params.id, data)
             toast.success('Receta Actualizada')
@@ -31,9 +36,16 @@ export function RecepieFormPage() {
                 setValue('description', res.data.description)
                 setValue('cooking_time', res.data.cooking_time)
                 setValue('instructions', res.data.instructions)
+
+                setSelectedIngredients(res.data.ingredients || [])
             }
         }
         loadRecepie()
+
+        async function loadIngredients() {
+            const res = await getIngredients()
+            setIngredients(res.data)
+        }
     }, [])
 
     return (
@@ -50,6 +62,26 @@ export function RecepieFormPage() {
 
                 <textarea className='bg-zinc-700 p-3 rounded-lg block w-full mb-3' rows="3" placeholder='Instructions' {...register("instructions", { required: true })} />
                 {errors.instructions && <span>this field is required</span>}
+
+                <div>
+                    <label className='block mb-2'>Select Ingredients:</label>
+                    <select
+                        multiple
+                        className='bg-zinc-700 p-3 rounded-lg block w-full mb-3'
+                        value={selectedIngredients}
+                        onChange={(e) =>
+                            setSelectedIngredients(
+                                Array.from(e.target.selectedOptions, option => option.value)
+                            )
+                        }
+                    >
+                        {ingredients.map((ingredient) => (
+                            <option key={ingredient.id} value={ingredient.id}>
+                                {ingredient.name}
+                            </option>
+                        ))}
+                    </select>
+                </div>
 
                 <button className='bg-indigo-500 p-3 rounded-lg block w-full mt-3'>Save</button>
             </form>
